@@ -27,7 +27,7 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
         console.log('Raw price from contract:', price.toString());
         const formattedPrice = ethers.utils.formatUnits(price, 18);
         console.log('Formatted price:', formattedPrice);
-        setMarketPrice('0.40');
+        setMarketPrice(formattedPrice);
       }
     } catch (err) {
       console.error('Error getting market price:', err);
@@ -160,8 +160,8 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
   const checkNetwork = async () => {
     try {
       const network = await provider.getNetwork();
-      if (network.chainId !== 31337) {
-        throw new Error('Please connect to Hardhat Network (Chain ID: 31337)');
+      if (network.chainId !== 80002) {
+        throw new Error('Please connect to Polygon Amoy Testnet (Chain ID: 80002)');
       }
     } catch (err) {
       console.error('Network check failed:', err);
