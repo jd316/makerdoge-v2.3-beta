@@ -68,21 +68,21 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       const borrowRate = await contracts.vault.borrowRate();
       console.log('Current borrow rate:', borrowRate.toString(), 'basis points');
       
-      // Get collateral and debt directly from the contract
-      const collateralBN = await contracts.vault.collateral(userAddress);
-      const debtBN = await contracts.vault.userDebt(userAddress);
-      
-      console.log('Raw values:', {
-        collateral: collateralBN.toString(),
-        debt: debtBN.toString()
+      const vaultInfo = await contracts.vault.getVaultInfo(userAddress);
+      console.log('Raw vault info:', {
+        collateral: vaultInfo[0].toString(),
+        debt: vaultInfo[1].toString(),
+        pendingInterest: vaultInfo[2].toString()
       });
 
-      const collateral = ethers.utils.formatEther(collateralBN);
-      const debt = ethers.utils.formatEther(debtBN);
+      const collateral = ethers.utils.formatEther(vaultInfo[0]);
+      const debt = ethers.utils.formatEther(vaultInfo[1]);
+      const interest = ethers.utils.formatEther(vaultInfo[2]);
 
       console.log('Formatted values:', {
         collateral,
         debt,
+        interest,
         borrowRate: (Number(borrowRate) / 100).toFixed(2) + '%'
       });
 
@@ -219,9 +219,9 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       console.log('Initial position check...');
       const initialInfo = await contracts.vault.getVaultInfo(userAddress);
       console.log('Initial position:', {
-        collateral: ethers.utils.formatEther(initialInfo.collateral),
-        debt: ethers.utils.formatEther(initialInfo.debt),
-        pendingInterest: ethers.utils.formatEther(initialInfo.pendingInterest)
+        collateral: ethers.utils.formatEther(initialInfo[0]),
+        debt: ethers.utils.formatEther(initialInfo[1]),
+        pendingInterest: ethers.utils.formatEther(initialInfo[2])
       });
 
       // Execute borrow
@@ -236,9 +236,9 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       console.log('Checking updated position...');
       const updatedInfo = await contracts.vault.getVaultInfo(userAddress);
       console.log('Updated position:', {
-        collateral: ethers.utils.formatEther(updatedInfo.collateral),
-        debt: ethers.utils.formatEther(updatedInfo.debt),
-        pendingInterest: ethers.utils.formatEther(updatedInfo.pendingInterest)
+        collateral: ethers.utils.formatEther(updatedInfo[0]),
+        debt: ethers.utils.formatEther(updatedInfo[1]),
+        pendingInterest: ethers.utils.formatEther(updatedInfo[2])
       });
 
       // Update UI
