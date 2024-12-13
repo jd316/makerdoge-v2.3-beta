@@ -1,0 +1,371 @@
+.borrow-interface {
+  background-color: #1E2123;
+  border-radius: 12px;
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 30px;
+  color: #ffffff;
+  border: 1px solid #ff8c00;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #333;
+}
+
+.header-right {
+  text-align: right;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  color: #ff8c00;
+}
+
+.title::before {
+  content: "$";
+  background: #ff8c00;
+  color: #1E2123;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.market-price {
+  color: #ffffff;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.tabs {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #333;
+}
+
+.tab {
+  padding: 10px 0;
+  cursor: pointer;
+  color: #ffffff;
+  background: none;
+  border: none;
+  font-size: 16px;
+  position: relative;
+}
+
+.tab.active {
+  color: #ff8c00;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #ff8c00;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+.overview {
+  background: #1E2123;
+  border-radius: 8px;
+}
+
+.overview h2 {
+  color: #ff8c00;
+  margin-bottom: 25px;
+  font-size: 18px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+}
+
+.metric {
+  background: #1E2123;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.metric label {
+  display: flex;
+  align-items: center;
+  color: #ffffff;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.value {
+  font-size: 24px;
+  color: #ffffff;
+}
+
+.value .unit {
+  color: #ff8c00;
+  margin-left: 5px;
+}
+
+.configure {
+  background: #1E2123;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.configure h2 {
+  color: #ff8c00;
+  margin-bottom: 20px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  color: #ffffff;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.input-with-max {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+input {
+  background: #2C2F31;
+  border: 1px solid #333;
+  color: #ffffff;
+  padding: 12px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.max-button {
+  background: #2C2F31;
+  border: 1px solid #ff8c00;
+  color: #ff8c00;
+  padding: 0 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.max-button:hover {
+  background: #ff8c00;
+  color: #1E2123;
+}
+
+.action-button {
+  width: 100%;
+  padding: 12px;
+  background: #ff8c00;
+  color: #1E2123;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.action-button:hover {
+  background: #ff9d1f;
+}
+
+.action-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.wallet-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.wallet-button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.wallet-button.connect {
+  background: #ff8c00;
+  color: #1E2123;
+  border: none;
+}
+
+.wallet-button.connect:hover {
+  background: #ff9d1f;
+}
+
+.wallet-button.disconnect {
+  background: transparent;
+  color: #ff8c00;
+  border: 1px solid #ff8c00;
+}
+
+.wallet-button.disconnect:hover {
+  background: rgba(255, 140, 0, 0.1);
+}
+
+.wallet-address {
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.approval-status {
+  text-align: center;
+  margin: 15px 0;
+  padding: 10px;
+}
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-indicator.approved {
+  background-color: rgba(39, 174, 96, 0.1);
+  color: #27AE60;
+  border: 1px solid #27AE60;
+}
+
+.status-indicator.not-approved {
+  background-color: rgba(255, 140, 0, 0.1);
+  color: #ff8c00;
+  border: 1px solid #ff8c00;
+}
+
+.error-message {
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #ff3b30;
+}
+
+.info-icon {
+  margin-left: 5px;
+  color: #666;
+  cursor: help;
+}
+
+.usd-value {
+  color: #666;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.deposit-doge, .custom-spending-cap {
+  color: white;
+}
+
+.transaction-status {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.transaction-pending {
+  background-color: rgba(255, 165, 0, 0.1);
+  color: #ffffff;
+  border: 1px solid #ffa500;
+}
+
+.transaction-success {
+  background-color: rgba(0, 255, 0, 0.1);
+  color: #ffffff;
+  border: 1px solid #00ff00;
+}
+
+.transaction-error {
+  background-color: rgba(255, 0, 0, 0.1);
+  color: #ffffff;
+  border: 1px solid #ff0000;
+}
+
+button {
+  background-color: #ff8c00;
+  color: #1a1a1a;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 5px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #ffa500;
+}
+
+button:disabled {
+  background-color: #666666;
+  cursor: not-allowed;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.connected-status {
+  text-align: center;
+  color: #ffffff;
+  padding: 16px;
+  background-color: #242424;
+  border-radius: 8px;
+}
+
+.connected-address {
+  color: #ffffff;
+  font-family: monospace;
+}
+
+.loading {
+  color: #ffffff;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.wallet-status {
+  text-align: center;
+  color: #ffffff;
+  margin-top: 20px;
+}
