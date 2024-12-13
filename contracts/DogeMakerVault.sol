@@ -153,4 +153,16 @@ contract DogeMakerVault is ReentrancyGuard, Ownable {
         uint256 collateralValueInUSD = (vault.collateral * getDogePriceInUSD()) / PRICE_PRECISION;
         return (collateralValueInUSD * 100) / vault.debt;
     }
+
+    function getUserCollateral(address user) public view returns (uint256) {
+        return vaults[user].collateral;
+    }
+
+    function getUserDebt(address user) public view returns (uint256) {
+        return vaults[user].debt;
+    }
+
+    function getUserLastAccrual(address user) public view returns (uint256) {
+        return vaults[user].lastInterestAccrual;
+    }
 }

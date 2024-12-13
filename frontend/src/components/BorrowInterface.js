@@ -68,9 +68,9 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       const borrowRate = await contracts.vault.borrowRate();
       console.log('Current borrow rate:', borrowRate.toString(), 'basis points');
       
-      // Get collateral and debt directly from mappings
-      const collateralBN = await contracts.vault.collateral(userAddress);
-      const debtBN = await contracts.vault.userDebt(userAddress);
+      // Get collateral and debt using explicit getter functions
+      const collateralBN = await contracts.vault.getUserCollateral(userAddress);
+      const debtBN = await contracts.vault.getUserDebt(userAddress);
       const pendingInterestBN = await contracts.vault.calculateInterest(userAddress);
       
       console.log('Raw values:', {
@@ -221,8 +221,8 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       // Get initial position info
       const userAddress = await signer.getAddress();
       console.log('Initial position check...');
-      const initialCollateral = await contracts.vault.collateral(userAddress);
-      const initialDebt = await contracts.vault.userDebt(userAddress);
+      const initialCollateral = await contracts.vault.getUserCollateral(userAddress);
+      const initialDebt = await contracts.vault.getUserDebt(userAddress);
       const initialInterest = await contracts.vault.calculateInterest(userAddress);
       
       console.log('Initial position:', {
@@ -232,17 +232,15 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       });
 
       // Execute borrow
-      const borrowAmountWei = ethers.utils.parseEther(borrowAmount.toString());
-      console.log('Borrowing amount:', borrowAmount, 'USDm');
+      console.log('Executing borrow...');
       const tx = await contracts.vault.borrow(borrowAmountWei);
-      console.log('Borrow transaction sent:', tx.hash);
       await tx.wait();
-      console.log('Borrow confirmed');
+      console.log('Borrow successful');
 
       // Get updated position info
       console.log('Checking updated position...');
-      const updatedCollateral = await contracts.vault.collateral(userAddress);
-      const updatedDebt = await contracts.vault.userDebt(userAddress);
+      const updatedCollateral = await contracts.vault.getUserCollateral(userAddress);
+      const updatedDebt = await contracts.vault.getUserDebt(userAddress);
       const updatedInterest = await contracts.vault.calculateInterest(userAddress);
       
       console.log('Updated position:', {
