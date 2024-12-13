@@ -92,7 +92,7 @@ function App() {
         });
 
         // Test contract calls
-        const price = await priceFeed.latestAnswer();
+        const price = await priceFeed.getPrice();
         console.log('Current price:', ethers.utils.formatUnits(price, 8));
 
         const account = await signer.getAddress();
