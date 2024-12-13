@@ -68,21 +68,21 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       const borrowRate = await contracts.vault.borrowRate();
       console.log('Current borrow rate:', borrowRate.toString(), 'basis points');
       
-      const vaultInfo = await contracts.vault.getVaultInfo(userAddress);
-      console.log('Raw vault info:', {
-        collateral: vaultInfo.collateral.toString(),
-        debt: vaultInfo.debt.toString(),
-        pendingInterest: vaultInfo.pendingInterest.toString()
+      // Get collateral and debt directly from the contract
+      const collateralBN = await contracts.vault.collateral(userAddress);
+      const debtBN = await contracts.vault.userDebt(userAddress);
+      
+      console.log('Raw values:', {
+        collateral: collateralBN.toString(),
+        debt: debtBN.toString()
       });
 
-      const collateral = ethers.utils.formatEther(vaultInfo.collateral);
-      const debt = ethers.utils.formatEther(vaultInfo.debt);
-      const interest = ethers.utils.formatEther(vaultInfo.pendingInterest);
+      const collateral = ethers.utils.formatEther(collateralBN);
+      const debt = ethers.utils.formatEther(debtBN);
 
       console.log('Formatted values:', {
         collateral,
         debt,
-        interest,
         borrowRate: (Number(borrowRate) / 100).toFixed(2) + '%'
       });
 
