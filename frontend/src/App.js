@@ -3,11 +3,11 @@ import { ethers } from 'ethers';
 import './App.css';
 import BorrowInterface from './components/BorrowInterface';
 
-// Import contract artifacts
-import WDOGEArtifact from './artifacts/contracts/WDOGE.sol/WDOGE.json';
-import USDmArtifact from './artifacts/contracts/USDm.sol/USDm.json';
-import DogeMakerVaultArtifact from './artifacts/contracts/DogeMakerVault.sol/DogeMakerVault.json';
-import MockPriceFeedArtifact from './artifacts/contracts/MockPriceFeed.sol/MockPriceFeed.json';
+// Import contract ABIs
+import WDOGEArtifact from './abis/WDOGE.json';
+import USDmArtifact from './abis/USDm.json';
+import DogeMakerVaultArtifact from './abis/DogeMakerVault.json';
+import MockPriceFeedArtifact from './abis/MockPriceFeed.json';
 
 // Import contract addresses from config
 import CONTRACT_ADDRESSES from './config/contracts';
