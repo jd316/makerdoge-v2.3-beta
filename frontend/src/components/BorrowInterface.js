@@ -68,16 +68,20 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       const borrowRate = await contracts.vault.borrowRate();
       console.log('Current borrow rate:', borrowRate.toString(), 'basis points');
       
-      const vaultInfo = await contracts.vault.getVaultInfo(userAddress);
-      console.log('Raw vault info:', {
-        collateral: vaultInfo[0].toString(),
-        debt: vaultInfo[1].toString(),
-        pendingInterest: vaultInfo[2].toString()
+      // Get collateral and debt directly from mappings
+      const collateralBN = await contracts.vault.collateral(userAddress);
+      const debtBN = await contracts.vault.userDebt(userAddress);
+      const pendingInterestBN = await contracts.vault.calculateInterest(userAddress);
+      
+      console.log('Raw values:', {
+        collateral: collateralBN.toString(),
+        debt: debtBN.toString(),
+        pendingInterest: pendingInterestBN.toString()
       });
 
-      const collateral = ethers.utils.formatEther(vaultInfo[0]);
-      const debt = ethers.utils.formatEther(vaultInfo[1]);
-      const interest = ethers.utils.formatEther(vaultInfo[2]);
+      const collateral = ethers.utils.formatEther(collateralBN);
+      const debt = ethers.utils.formatEther(debtBN);
+      const interest = ethers.utils.formatEther(pendingInterestBN);
 
       console.log('Formatted values:', {
         collateral,
@@ -217,11 +221,14 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       // Get initial position info
       const userAddress = await signer.getAddress();
       console.log('Initial position check...');
-      const initialInfo = await contracts.vault.getVaultInfo(userAddress);
+      const initialCollateral = await contracts.vault.collateral(userAddress);
+      const initialDebt = await contracts.vault.userDebt(userAddress);
+      const initialInterest = await contracts.vault.calculateInterest(userAddress);
+      
       console.log('Initial position:', {
-        collateral: ethers.utils.formatEther(initialInfo[0]),
-        debt: ethers.utils.formatEther(initialInfo[1]),
-        pendingInterest: ethers.utils.formatEther(initialInfo[2])
+        collateral: ethers.utils.formatEther(initialCollateral),
+        debt: ethers.utils.formatEther(initialDebt),
+        pendingInterest: ethers.utils.formatEther(initialInterest)
       });
 
       // Execute borrow
@@ -234,11 +241,14 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
 
       // Get updated position info
       console.log('Checking updated position...');
-      const updatedInfo = await contracts.vault.getVaultInfo(userAddress);
+      const updatedCollateral = await contracts.vault.collateral(userAddress);
+      const updatedDebt = await contracts.vault.userDebt(userAddress);
+      const updatedInterest = await contracts.vault.calculateInterest(userAddress);
+      
       console.log('Updated position:', {
-        collateral: ethers.utils.formatEther(updatedInfo[0]),
-        debt: ethers.utils.formatEther(updatedInfo[1]),
-        pendingInterest: ethers.utils.formatEther(updatedInfo[2])
+        collateral: ethers.utils.formatEther(updatedCollateral),
+        debt: ethers.utils.formatEther(updatedDebt),
+        pendingInterest: ethers.utils.formatEther(updatedInterest)
       });
 
       // Update UI
