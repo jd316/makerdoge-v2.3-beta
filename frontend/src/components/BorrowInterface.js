@@ -387,6 +387,32 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
     }
   };
 
+  const mintTestTokens = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+
+      const address = await signer.getAddress();
+      const mintAmount = ethers.utils.parseEther('1000'); // Mint 1000 WDOGE for testing
+
+      console.log('Minting test tokens for:', address);
+      const tx = await contracts.wdoge.mint(address, mintAmount);
+      await tx.wait();
+      console.log('Successfully minted test tokens');
+
+      // Update balance
+      await checkApprovalAndBalance();
+      
+      // Show success message
+      setError('Successfully minted 1000 WDOGE tokens for testing!');
+    } catch (err) {
+      console.error('Error minting test tokens:', err);
+      setError('Failed to mint test tokens: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="borrow-interface">
       <div className="header">
@@ -403,6 +429,13 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
                 <span className="wallet-address">Wallet Connected: {account.slice(0, 6)}...{account.slice(-4)}</span>
                 <button onClick={disconnectWallet} className="wallet-button disconnect">
                   Disconnect
+                </button>
+                <button 
+                  onClick={mintTestTokens} 
+                  className="wallet-button mint-tokens"
+                  disabled={isLoading}
+                >
+                  Mint Test Tokens
                 </button>
               </>
             ) : (

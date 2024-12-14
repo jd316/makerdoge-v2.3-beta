@@ -235,6 +235,20 @@ input {
   background: rgba(255, 140, 0, 0.1);
 }
 
+.wallet-button.mint-tokens {
+  background-color: #4CAF50;
+  margin-left: 10px;
+}
+
+.wallet-button.mint-tokens:hover {
+  background-color: #45a049;
+}
+
+.wallet-button.mint-tokens:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
 .wallet-address {
   color: #ffffff;
   font-size: 14px;
