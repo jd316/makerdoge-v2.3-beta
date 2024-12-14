@@ -218,6 +218,10 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       setIsLoading(true);
       setError('');
 
+      // Convert borrow amount to Wei
+      const borrowAmountWei = ethers.utils.parseEther(borrowAmount.toString());
+      console.log('Borrow amount in Wei:', borrowAmountWei.toString());
+
       // Get initial position info
       const userAddress = await signer.getAddress();
       console.log('Initial position check...');
