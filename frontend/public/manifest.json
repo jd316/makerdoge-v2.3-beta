@@ -1,6 +1,7 @@
 {
   "short_name": "MAKERdoge",
-  "name": "MAKERdoge DeFi Protocol",
+  "name": "MAKERdoge DeFi Protocol v2.3 BETA",
+  "version": "2.3.0-beta",
   "icons": [
     {
       "src": "/favicon.ico",

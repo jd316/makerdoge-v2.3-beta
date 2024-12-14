@@ -1,6 +1,6 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
+  "name": "makerdoge",
+  "version": "2.3.0-beta",
   "private": true,
   "dependencies": {
     "@chakra-ui/react": "^2.8.2",
