@@ -176,6 +176,23 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
     }
   };
 
+  const handleError = (err, customMessage = '') => {
+    console.error(customMessage, err);
+    let errorMessage = customMessage + ': ';
+    
+    if (err.code === 'ACTION_REJECTED') {
+      errorMessage = 'Transaction was cancelled by user';
+    } else if (err.message.includes('user rejected')) {
+      errorMessage = 'Transaction was cancelled by user';
+    } else if (err.message.includes('insufficient funds')) {
+      errorMessage = 'Insufficient funds for gas fees';
+    } else {
+      errorMessage += err.message;
+    }
+    
+    setError(errorMessage);
+  };
+
   const handleDeposit = async () => {
     try {
       setIsLoading(true);
@@ -196,10 +213,15 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       const currentAllowance = await contracts.wdoge.allowance(address, contracts.vault.address);
       if (currentAllowance.lt(depositAmountWei)) {
         console.log('Approval needed. Requesting approval...');
-        const approveTx = await contracts.wdoge.approve(contracts.vault.address, depositAmountWei);
-        await approveTx.wait();
-        console.log('Approval granted');
-        setIsApproved(true);
+        try {
+          const approveTx = await contracts.wdoge.approve(contracts.vault.address, depositAmountWei);
+          await approveTx.wait();
+          console.log('Approval granted');
+          setIsApproved(true);
+        } catch (approveErr) {
+          handleError(approveErr, 'Failed to approve WDOGE');
+          return;
+        }
       }
 
       // Proceed with deposit
@@ -211,10 +233,10 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       await checkApprovalAndBalance();
       await updatePositionInfo(address);
       setDepositAmount('0');
+      setError('Deposit successful!');
       
     } catch (err) {
-      console.error('Error in deposit:', err);
-      setError(err.message);
+      handleError(err, 'Error in deposit');
     } finally {
       setIsLoading(false);
     }
@@ -256,35 +278,34 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       console.log('Borrow successful');
 
       // Get updated position info
-      console.log('Checking updated position...');
-      const updatedCollateral = await contracts.vault.getUserCollateral(userAddress);
-      const updatedDebt = await contracts.vault.getUserDebt(userAddress);
-      let updatedInterest;
-      try {
-        const vaultInfo = await contracts.vault.getVaultInfo(userAddress);
-        updatedInterest = vaultInfo.pendingInterest;
-      } catch (err) {
-        console.log('Error getting updated interest, setting to 0:', err);
-        updatedInterest = ethers.BigNumber.from(0);
-      }
-      
-      console.log('Updated position:', {
-        collateral: ethers.utils.formatEther(updatedCollateral),
-        debt: ethers.utils.formatEther(updatedDebt),
-        pendingInterest: ethers.utils.formatEther(updatedInterest)
-      });
-
-      // Update UI
       await updatePositionInfo(userAddress);
       setBorrowAmount('0');
+      setError('Borrow successful!');
     } catch (err) {
-      console.error('Error borrowing USDm:', err);
-      console.error('Error details:', {
-        message: err.message,
-        code: err.code,
-        data: err.data
-      });
-      setError('Failed to borrow USDm: ' + err.message);
+      handleError(err, 'Failed to borrow USDm');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const mintTestTokens = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+
+      const address = await signer.getAddress();
+      const mintAmount = ethers.utils.parseEther('1000'); // Mint 1000 WDOGE for testing
+
+      console.log('Minting test tokens for:', address);
+      const tx = await contracts.wdoge.mint(address, mintAmount);
+      await tx.wait();
+      console.log('Successfully minted test tokens');
+
+      // Update balance
+      await checkApprovalAndBalance();
+      setError('Successfully minted 1000 WDOGE tokens for testing!');
+    } catch (err) {
+      handleError(err, 'Failed to mint test tokens');
     } finally {
       setIsLoading(false);
     }
@@ -384,32 +405,6 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
     } catch (err) {
       console.error('Approval failed:', err);
       setError(err.message || 'Approval failed. Please try again.');
-    }
-  };
-
-  const mintTestTokens = async () => {
-    try {
-      setIsLoading(true);
-      setError('');
-
-      const address = await signer.getAddress();
-      const mintAmount = ethers.utils.parseEther('1000'); // Mint 1000 WDOGE for testing
-
-      console.log('Minting test tokens for:', address);
-      const tx = await contracts.wdoge.mint(address, mintAmount);
-      await tx.wait();
-      console.log('Successfully minted test tokens');
-
-      // Update balance
-      await checkApprovalAndBalance();
-      
-      // Show success message
-      setError('Successfully minted 1000 WDOGE tokens for testing!');
-    } catch (err) {
-      console.error('Error minting test tokens:', err);
-      setError('Failed to mint test tokens: ' + err.message);
-    } finally {
-      setIsLoading(false);
     }
   };
 
