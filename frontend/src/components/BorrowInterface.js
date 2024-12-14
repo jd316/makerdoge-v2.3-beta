@@ -421,6 +421,11 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       </div>
 
       {error && <div className="error-message">{error}</div>}
+      {!account && (
+        <div className="network-warning">
+          Please switch to Polygon Amoy Testnet to use this dApp
+        </div>
+      )}
 
       <div className="approval-status">
         <span className={`status-indicator ${isApproved ? 'approved' : 'not-approved'}`}>
