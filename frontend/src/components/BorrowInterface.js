@@ -71,7 +71,14 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       // Get collateral and debt using explicit getter functions
       const collateralBN = await contracts.vault.getUserCollateral(userAddress);
       const debtBN = await contracts.vault.getUserDebt(userAddress);
-      const pendingInterestBN = await contracts.vault.calculateInterest(userAddress);
+      let pendingInterestBN;
+      try {
+        pendingInterestBN = await contracts.vault.getVaultInfo(userAddress);
+        pendingInterestBN = pendingInterestBN.pendingInterest; // Get the pendingInterest from the struct
+      } catch (err) {
+        console.log('Error getting pending interest, setting to 0:', err);
+        pendingInterestBN = ethers.BigNumber.from(0);
+      }
       
       console.log('Raw values:', {
         collateral: collateralBN.toString(),
@@ -227,7 +234,14 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       console.log('Initial position check...');
       const initialCollateral = await contracts.vault.getUserCollateral(userAddress);
       const initialDebt = await contracts.vault.getUserDebt(userAddress);
-      const initialInterest = await contracts.vault.calculateInterest(userAddress);
+      let initialInterest;
+      try {
+        const vaultInfo = await contracts.vault.getVaultInfo(userAddress);
+        initialInterest = vaultInfo.pendingInterest;
+      } catch (err) {
+        console.log('Error getting initial interest, setting to 0:', err);
+        initialInterest = ethers.BigNumber.from(0);
+      }
       
       console.log('Initial position:', {
         collateral: ethers.utils.formatEther(initialCollateral),
@@ -245,7 +259,14 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       console.log('Checking updated position...');
       const updatedCollateral = await contracts.vault.getUserCollateral(userAddress);
       const updatedDebt = await contracts.vault.getUserDebt(userAddress);
-      const updatedInterest = await contracts.vault.calculateInterest(userAddress);
+      let updatedInterest;
+      try {
+        const vaultInfo = await contracts.vault.getVaultInfo(userAddress);
+        updatedInterest = vaultInfo.pendingInterest;
+      } catch (err) {
+        console.log('Error getting updated interest, setting to 0:', err);
+        updatedInterest = ethers.BigNumber.from(0);
+      }
       
       console.log('Updated position:', {
         collateral: ethers.utils.formatEther(updatedCollateral),
@@ -333,14 +354,36 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
 
   const testApprove = async () => {
     try {
+      if (!contracts.wdoge || !contracts.vault) {
+        throw new Error('Contracts not initialized');
+      }
+
+      const userAddress = await signer.getAddress();
+      console.log('User address:', userAddress);
+      
+      // Check current network
+      const network = await provider.getNetwork();
+      console.log('Current network:', network);
+
+      if (network.chainId !== 80002) {
+        throw new Error('Please switch to Polygon Amoy Testnet');
+      }
+
       const amountToApprove = ethers.utils.parseEther('100'); // Approve 100 WDOGE
-      const approveTx = await contracts.wdoge.approve(contracts.vault.address, amountToApprove);
-      await approveTx.wait();
-      console.log('Approval successful');
+      console.log('Approving amount:', amountToApprove.toString());
+
+      const approveTx = await contracts.wdoge.approve(contracts.vault.address, amountToApprove, {
+        gasLimit: 100000 // Explicitly set gas limit
+      });
+      
+      console.log('Approval transaction sent:', approveTx.hash);
+      const receipt = await approveTx.wait();
+      console.log('Approval confirmed in block:', receipt.blockNumber);
+      
       setIsApproved(true);
     } catch (err) {
       console.error('Approval failed:', err);
-      setError(err.message);
+      setError(err.message || 'Approval failed. Please try again.');
     }
   };
 
