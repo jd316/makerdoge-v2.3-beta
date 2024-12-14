@@ -55,44 +55,6 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
     }
   }, [signer, contracts.wdoge, contracts.vault]);
 
-  // Add retry logic for RPC calls
-  const retryRpcCall = async (fn, retries = 3, delay = 1000) => {
-    for (let i = 0; i < retries; i++) {
-      try {
-        return await fn();
-      } catch (err) {
-        if (i === retries - 1) throw err;
-        
-        console.log(`RPC call failed, attempt ${i + 1}/${retries}:`, err.message);
-        if (err.message.includes('JSON-RPC error') || err.message.includes('network')) {
-          console.log('Retrying in', delay, 'ms...');
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue;
-        }
-        throw err;
-      }
-    }
-  };
-
-  const checkNetworkAndProvider = async () => {
-    if (!provider || !signer) {
-      throw new Error('Provider or signer not initialized');
-    }
-
-    const network = await provider.getNetwork();
-    if (network.chainId !== 80002) {
-      throw new Error('Please switch to Polygon Amoy Testnet (Chain ID: 80002)');
-    }
-
-    // Check if provider is responding
-    try {
-      await provider.getBlockNumber();
-    } catch (err) {
-      console.error('Provider health check failed:', err);
-      throw new Error('Network connection issue. Please check your connection and try again.');
-    }
-  };
-
   const updatePositionInfo = useCallback(async (userAddress) => {
     try {
       if (!contracts.vault || !userAddress) {
@@ -102,19 +64,17 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
 
       console.log('Fetching position for address:', userAddress);
       
-      await checkNetworkAndProvider();
-      
       // Debug contract state
-      const borrowRate = await retryRpcCall(() => contracts.vault.borrowRate());
+      const borrowRate = await contracts.vault.borrowRate();
       console.log('Current borrow rate:', borrowRate.toString(), 'basis points');
       
-      // Get collateral and debt using explicit getter functions with retry logic
-      const collateralBN = await retryRpcCall(() => contracts.vault.getUserCollateral(userAddress));
-      const debtBN = await retryRpcCall(() => contracts.vault.getUserDebt(userAddress));
+      // Get collateral and debt using explicit getter functions
+      const collateralBN = await contracts.vault.getUserCollateral(userAddress);
+      const debtBN = await contracts.vault.getUserDebt(userAddress);
       let pendingInterestBN;
       try {
-        const vaultInfo = await retryRpcCall(() => contracts.vault.getVaultInfo(userAddress));
-        pendingInterestBN = vaultInfo.pendingInterest;
+        pendingInterestBN = await contracts.vault.getVaultInfo(userAddress);
+        pendingInterestBN = pendingInterestBN.pendingInterest; // Get the pendingInterest from the struct
       } catch (err) {
         console.log('Error getting pending interest, setting to 0:', err);
         pendingInterestBN = ethers.BigNumber.from(0);
@@ -141,9 +101,9 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       setPositionDebt(debt);
       setBorrowRate((Number(borrowRate) / 100).toFixed(2));
 
-      // Calculate other metrics with retry logic
+      // Calculate other metrics
       if (contracts.priceFeed) {
-        const price = await retryRpcCall(() => contracts.priceFeed.getPrice());
+        const price = await contracts.priceFeed.getPrice();
         const priceInEther = ethers.utils.formatUnits(price, 18);
         console.log('Current DOGE price:', priceInEther, 'USD');
         
@@ -175,6 +135,8 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
         const maxBorrow = (Number(collateral) * Number(priceInEther) / 1.5) - Number(debt);
         console.log('Calculated max borrow:', maxBorrow);
         setAvailableToBorrow(Math.max(0, maxBorrow).toFixed(2));
+      } else {
+        console.error('PriceFeed contract not initialized');
       }
     } catch (err) {
       console.error('Error updating position:', err);
@@ -183,38 +145,43 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
         code: err.code,
         data: err.data
       });
-      setError(`Error updating position: ${err.message}. Please check your network connection and try again.`);
+      setError('Error updating position: ' + err.message);
     }
   }, [contracts.vault, contracts.priceFeed]);
 
   useEffect(() => {
     const init = async () => {
-      try {
-        if (!signer || !contracts.wdoge || !contracts.vault) {
-          console.log('Waiting for wallet connection...');
-          return;
-        }
-        await checkNetworkAndProvider();
+      if (signer && contracts.wdoge && contracts.vault) {
         const address = await signer.getAddress();
         setAccount(address);
         await checkApprovalAndBalance();
         await updatePositionInfo(address);
         await updateMarketPrice();
-      } catch (err) {
-        console.error('Error initializing:', err);
-        setError(err.message);
       }
     };
 
     init();
-  }, [signer, contracts, checkApprovalAndBalance, updatePositionInfo, updateMarketPrice, checkNetworkAndProvider]);
+  }, [signer, contracts, checkApprovalAndBalance, updatePositionInfo, updateMarketPrice]);
+
+  // Add network check function
+  const checkNetwork = async () => {
+    try {
+      const network = await provider.getNetwork();
+      if (network.chainId !== 80002) {
+        throw new Error('Please connect to Polygon Amoy Testnet (Chain ID: 80002)');
+      }
+    } catch (err) {
+      console.error('Network check failed:', err);
+      throw err;
+    }
+  };
 
   const handleDeposit = async () => {
     try {
       setIsLoading(true);
       setError('');
 
-      await checkNetworkAndProvider();
+      await checkNetwork();
 
       const address = await signer.getAddress();
       const depositAmountWei = ethers.utils.parseEther(depositAmount.toString());
@@ -258,8 +225,6 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       setIsLoading(true);
       setError('');
 
-      await checkNetworkAndProvider();
-
       // Convert borrow amount to Wei
       const borrowAmountWei = ethers.utils.parseEther(borrowAmount.toString());
       console.log('Borrow amount in Wei:', borrowAmountWei.toString());
@@ -267,11 +232,11 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       // Get initial position info
       const userAddress = await signer.getAddress();
       console.log('Initial position check...');
-      const initialCollateral = await retryRpcCall(() => contracts.vault.getUserCollateral(userAddress));
-      const initialDebt = await retryRpcCall(() => contracts.vault.getUserDebt(userAddress));
+      const initialCollateral = await contracts.vault.getUserCollateral(userAddress);
+      const initialDebt = await contracts.vault.getUserDebt(userAddress);
       let initialInterest;
       try {
-        const vaultInfo = await retryRpcCall(() => contracts.vault.getVaultInfo(userAddress));
+        const vaultInfo = await contracts.vault.getVaultInfo(userAddress);
         initialInterest = vaultInfo.pendingInterest;
       } catch (err) {
         console.log('Error getting initial interest, setting to 0:', err);
@@ -284,31 +249,19 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
         pendingInterest: ethers.utils.formatEther(initialInterest)
       });
 
-      // Execute borrow with safe gas limit
+      // Execute borrow
       console.log('Executing borrow...');
-      let gasLimit;
-      try {
-        gasLimit = Math.floor(await contracts.vault.estimateGas.borrow(borrowAmountWei) * 1.2);
-      } catch (err) {
-        console.log('Gas estimation failed, using default:', err);
-        gasLimit = 500000; // Safe default gas limit
-      }
-      
-      const tx = await retryRpcCall(() => 
-        contracts.vault.borrow(borrowAmountWei, {
-          gasLimit
-        })
-      );
+      const tx = await contracts.vault.borrow(borrowAmountWei);
       await tx.wait();
       console.log('Borrow successful');
 
       // Get updated position info
       console.log('Checking updated position...');
-      const updatedCollateral = await retryRpcCall(() => contracts.vault.getUserCollateral(userAddress));
-      const updatedDebt = await retryRpcCall(() => contracts.vault.getUserDebt(userAddress));
+      const updatedCollateral = await contracts.vault.getUserCollateral(userAddress);
+      const updatedDebt = await contracts.vault.getUserDebt(userAddress);
       let updatedInterest;
       try {
-        const vaultInfo = await retryRpcCall(() => contracts.vault.getVaultInfo(userAddress));
+        const vaultInfo = await contracts.vault.getVaultInfo(userAddress);
         updatedInterest = vaultInfo.pendingInterest;
       } catch (err) {
         console.log('Error getting updated interest, setting to 0:', err);
@@ -331,18 +284,7 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
         code: err.code,
         data: err.data
       });
-      
-      let errorMessage = 'Failed to borrow USDm: ';
-      if (err.message.includes('JSON-RPC error')) {
-        errorMessage += 'Network connection issue. Please try again.';
-      } else if (err.message.includes('insufficient funds')) {
-        errorMessage += 'Insufficient funds for gas. Please check your wallet balance.';
-      } else if (err.message.includes('user rejected')) {
-        errorMessage += 'Transaction was rejected.';
-      } else {
-        errorMessage += err.message;
-      }
-      setError(errorMessage);
+      setError('Failed to borrow USDm: ' + err.message);
     } finally {
       setIsLoading(false);
     }
@@ -357,13 +299,13 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
         const address = await signer.getAddress();
         setAccount(address);
         
-        // Check and switch to Polygon Amoy Testnet
+        // Check and switch to Hardhat network if needed
         const network = await provider.getNetwork();
-        if (network.chainId !== 80002) {
+        if (network.chainId !== 31337) {
           try {
             await window.ethereum.request({
               method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0x138C2' }], // 80002 in hex
+              params: [{ chainId: '0x7A69' }], // 31337 in hex
             });
           } catch (switchError) {
             // Handle chain not added to MetaMask
@@ -371,11 +313,10 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
               await window.ethereum.request({
                 method: 'wallet_addEthereumChain',
                 params: [{
-                  chainId: '0x138C2',
-                  chainName: 'Polygon Amoy Testnet',
-                  nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
-                  rpcUrls: ['https://polygon-amoy.infura.io/v3/'],
-                  blockExplorerUrls: ['https://www.oklink.com/amoy']
+                  chainId: '0x7A69',
+                  chainName: 'Hardhat Network',
+                  nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                  rpcUrls: ['http://127.0.0.1:8545/'],
                 }],
               });
             } else {
