@@ -58,15 +58,12 @@ p {
 }
 
 .network-warning {
-  background-color: #ff8c00;
-  color: #000000;
-  padding: 10px 20px;
-  border-radius: 8px;
-  margin: 10px 0;
-  font-weight: bold;
+  color: #ffcc00;
   text-align: center;
-  width: 100%;
-  max-width: 600px;
+  font-size: 1.2em;
+  margin: 20px 0;
+  background: none;
+  padding: 0;
 }
 
 .error-message {
