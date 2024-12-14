@@ -333,12 +333,7 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
             if (switchError.code === 4902) {
               await window.ethereum.request({
                 method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: '0x7A69',
-                  chainName: 'Hardhat Network',
-                  nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-                  rpcUrls: ['http://127.0.0.1:8545/'],
-                }],
+                params: [/* ... */],
               });
             } else {
               throw switchError;
@@ -420,8 +415,7 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
           </div>
           <div className="wallet-controls">
             {account ? (
-              <>
-                <span className="wallet-address">Wallet Connected: {account.slice(0, 6)}...{account.slice(-4)}</span>
+              <><span className="wallet-address">Wallet Connected: {account.slice(0, 6)}...{account.slice(-4)}</span>
                 <button onClick={disconnectWallet} className="wallet-button disconnect">
                   Disconnect
                 </button>
@@ -432,14 +426,13 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
                 >
                   Mint Test Tokens
                 </button>
-              </>
+              </> 
             ) : (
-              <>
-                <span>Wallet Not Connected</span>
+              <><span>Wallet Not Connected</span>
                 <button onClick={connectWallet} className="wallet-button connect">
                   Connect Wallet
                 </button>
-              </>
+              </> 
             )}
           </div>
           <div className="wdoge-balance">
@@ -468,7 +461,9 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
 
       <div className="tabs">
         <button className="tab active">Set up</button>
-        <button className="tab">Position Info</button>
+        <a href="https://faucet.polygon.technology/" target="_blank" rel="noopener noreferrer" className="tab">
+          Get Test Tokens
+        </a>
       </div>
 
       <div className="content">
@@ -586,14 +581,13 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
               Connect Wallet
             </button>
           ) : (
-            <>
-              <button
-                onClick={handleDeposit}
-                className="action-button"
-                disabled={isLoading || !depositAmount || depositAmount <= 0}
-              >
-                Deposit
-              </button>
+            <><button
+              onClick={handleDeposit}
+              className="action-button"
+              disabled={isLoading || !depositAmount || depositAmount <= 0}
+            >
+              Deposit
+            </button>
               <button
                 onClick={handleBorrow}
                 className="action-button"
@@ -601,7 +595,7 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
               >
                 Borrow
               </button>
-            </>
+            </> 
           )}
 
           {isLoading && <div className="loading">Transaction in progress...</div>}
