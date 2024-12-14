@@ -189,37 +189,32 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
 
   useEffect(() => {
     const init = async () => {
-      if (signer && contracts.wdoge && contracts.vault) {
+      try {
+        if (!signer || !contracts.wdoge || !contracts.vault) {
+          console.log('Waiting for wallet connection...');
+          return;
+        }
+        await checkNetworkAndProvider();
         const address = await signer.getAddress();
         setAccount(address);
         await checkApprovalAndBalance();
         await updatePositionInfo(address);
         await updateMarketPrice();
+      } catch (err) {
+        console.error('Error initializing:', err);
+        setError(err.message);
       }
     };
 
     init();
-  }, [signer, contracts, checkApprovalAndBalance, updatePositionInfo, updateMarketPrice]);
-
-  // Add network check function
-  const checkNetwork = async () => {
-    try {
-      const network = await provider.getNetwork();
-      if (network.chainId !== 80002) {
-        throw new Error('Please connect to Polygon Amoy Testnet (Chain ID: 80002)');
-      }
-    } catch (err) {
-      console.error('Network check failed:', err);
-      throw err;
-    }
-  };
+  }, [signer, contracts, checkApprovalAndBalance, updatePositionInfo, updateMarketPrice, checkNetworkAndProvider]);
 
   const handleDeposit = async () => {
     try {
       setIsLoading(true);
       setError('');
 
-      await checkNetwork();
+      await checkNetworkAndProvider();
 
       const address = await signer.getAddress();
       const depositAmountWei = ethers.utils.parseEther(depositAmount.toString());
