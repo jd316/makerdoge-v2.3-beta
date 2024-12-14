@@ -71,7 +71,7 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
       // Get collateral and debt using explicit getter functions
       const collateralBN = await contracts.vault.getUserCollateral(userAddress);
       const debtBN = await contracts.vault.getUserDebt(userAddress);
-      const pendingInterestBN = await contracts.vault.calculateInterest(userAddress);
+      const pendingInterestBN = await contracts.vault.getPendingInterest(userAddress);
       
       console.log('Raw values:', {
         collateral: collateralBN.toString(),
