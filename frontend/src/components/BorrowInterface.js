@@ -333,7 +333,6 @@ const BorrowInterface = ({ provider, signer, contracts }) => {
 
   const testApprove = async () => {
     try {
-      const userAddress = await signer.getAddress();
       const amountToApprove = ethers.utils.parseEther('100'); // Approve 100 WDOGE
       const approveTx = await contracts.wdoge.approve(contracts.vault.address, amountToApprove);
       await approveTx.wait();
